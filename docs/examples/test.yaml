@@ -1,0 +1,26 @@
+schema_version: "1.6"
+
+tests:
+  - id: "test-case-1"
+    tags: ["unit-test"]
+    arrange:
+      vars:
+        a: "a value"            # scalars …
+        b: "b value"
+        c: $ref("./external-obj.json").c   # ← pull from file
+
+    act: 
+      expr: "$.add($row.a, $row.b)"
+      rows: $ref("./external-rows.csv")      # <: automatic CSV → list<obj>
+      permutations:                          # optional; merged into rows
+        a: ["a value 1", "a value 2"]
+        b: ["$vars.b", "b value 2"]
+        c: [$vars.c]
+      timeout: "duration(1s)"        # optional;
+      retry: 
+        attempts: 3
+        backoff: "duration(1s)" # optional; default: 0
+
+    assert:
+      returns: "$result == $row.expected"
+
